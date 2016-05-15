@@ -2,10 +2,10 @@ var OAuth2 = require('simple-oauth2'),
     Q = require('q'),
     Request = require('request');
 
-function FitbitApiClient(clientID, clientSecret) {
+function FitbitApiClient(data) {
     this.oauth2 = OAuth2({
-        clientID: clientID,
-        clientSecret: clientSecret,
+        clientID: data.clientID,
+        clientSecret: data.clientSecret,
         site: 'https://api.fitbit.com/', 
         authorizationPath: 'oauth2/authorize',
         tokenPath: 'oauth2/token',
@@ -14,20 +14,22 @@ function FitbitApiClient(clientID, clientSecret) {
 }
 
 FitbitApiClient.prototype = {
-    getAuthorizeUrl: function (scope, redirectUrl) {
+    getAuthorizeUrl: function (data) {
+        console.log(data);
         return this.oauth2.authCode.authorizeURL({
-            scope: scope,
-            redirect_uri: redirectUrl
+            scope: data.scope,
+            redirectUri: data.redirectUri
         }).replace('api', 'www');
     },
 
-    getAccessToken: function (code, redirectUrl) {
+    getAccessToken: function (data) {
         var deferred = Q.defer();
           
         this.oauth2.authCode.getToken({
-            code: code,
-            redirect_uri: redirectUrl
+            code: data.code,
+            redirect_uri: data.redirectUrl
         }, function (error, result) {
+            console.log(error, result);
             if (error) {
                 deferred.reject(error);
             } else {
@@ -38,12 +40,12 @@ FitbitApiClient.prototype = {
         return deferred.promise;
     },
     
-    refreshAccesstoken: function (accessToken, refreshToken) {
+    refreshAccesstoken: function (data) {
         var deferred = Q.defer();
           
         var token = this.oauth2.accessToken.create({
-            access_token: accessToken,
-            refresh_token: refreshToken,
+            access_token: data.accessToken,
+            refresh_token: data.refreshToken,
             expires_in: -1
         });
           
